@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Interview Bot - Performance Report</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(-20px, -20px) rotate(360deg); }
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background: #f8f9fa;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-left: 4px solid #3498db;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .card.score-excellent { border-left-color: #27ae60; }
+        .card.score-good { border-left-color: #f39c12; }
+        .card.score-average { border-left-color: #e67e22; }
+        .card.score-poor { border-left-color: #e74c3c; }
+
+        .card-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 10px 0;
+            color: #2c3e50;
+        }
+
+        .card-label {
+            font-size: 1em;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .performance-level {
+            font-size: 1.1em;
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .level-excellent { background: #27ae60; color: white; }
+        .level-good { background: #f39c12; color: white; }
+        .level-average { background: #e67e22; color: white; }
+        .level-poor { background: #e74c3c; color: white; }
+
+        .charts-section {
+            padding: 30px;
+            background: white;
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 50px;
+            height: 3px;
+            background: #3498db;
+            margin: 10px auto;
+            border-radius: 2px;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .chart-container {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .chart-placeholder {
+            height: 300px;
+            background: linear-gradient(45deg, #e3f2fd, #bbdefb);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1976d2;
+            font-size: 1.1em;
+            text-align: center;
+        }
+
+        .questions-section {
+            padding: 30px;
+            background: #f8f9fa;
+        }
+
+        .question-item {
+            background: white;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease;
+        }
+
+        .question-item:hover {
+            transform: translateY(-3px);
+        }
+
+        .question-header {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+
+        .question-number {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+
+        .question-text {
+            flex: 1;
+            font-size: 1.1em;
+        }
+
+        .question-score {
+            background: #3498db;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .question-details {
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .question-details.active {
+            padding: 25px;
+            max-height: 1000px;
+        }
+
+        .answer-section, .evaluation-section {
+            margin-bottom: 20px;
+        }
+
+        .section-subtitle {
+            font-size: 1.2em;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+        }
+
+        .user-answer {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+            font-style: italic;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .metric-item {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .metric-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 5px 0;
+        }
+
+        .metric-label {
+            font-size: 0.9em;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .keywords-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .keywords-positive, .keywords-negative {
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .keywords-positive {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+        }
+
+        .keywords-negative {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+        }
+
+        .keywords-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .keywords-title::before {
+            content: '✓';
+            margin-right: 8px;
+            color: #155724;
+        }
+
+        .keywords-negative .keywords-title::before {
+            content: '✗';
+            color: #721c24;
+        }
+
+        .keyword-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .keyword {
+            background: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            border: 1px solid #dee2e6;
+        }
+
+        .keywords-positive .keyword {
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+
+        .keywords-negative .keyword {
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+
+        .recommendations {
+            padding: 30px;
+            background: white;
+            margin-top: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .recommendation-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #e3f2fd;
+            border-radius: 8px;
+            border-left: 4px solid #1976d2;
+        }
+
+        .recommendation-icon {
+            font-size: 1.5em;
+            margin-right: 15px;
+            color: #1976d2;
+        }
+
+        .footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        .session-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .info-item {
+            text-align: center;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .keywords-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .summary-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animation for score cards */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .card.pulse {
+            animation: pulse 2s infinite;
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                background: white !important;
+                padding: 0;
+            }
+            
+            .container {
+                box-shadow: none;
+                border-radius: 0;
+            }
+            
+            .card:hover {
+                transform: none;
+            }
+            
+            .question-details {
+                max-height: none !important;
+                padding: 25px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <h1>🎯 AI Interview Performance Report</h1>
+            <p>Detailed analysis of your interview session</p>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="summary-cards">
+            <div class="card score-excellent">
+                <div class="card-label">Overall Score</div>
+                <div class="card-value" id="overall-score">8.5/10</div>
+                <div class="performance-level level-excellent" id="performance-level">Excellent</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-label">Questions Answered</div>
+                <div class="card-value" id="total-questions">12</div>
+                <div class="card-label">Total Questions</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-label">Session Duration</div>
+                <div class="card-value" id="session-duration">15:30</div>
+                <div class="card-label">Minutes</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-label">Average Response</div>
+                <div class="card-value" id="avg-response">45s</div>
+                <div class="card-label">Per Question</div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="charts-section">
+            <h2 class="section-title">Performance Analytics</h2>
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <h3>Category-wise Performance</h3>
+                    <div class="chart-placeholder">
+                        Category Performance Chart<br>
+                        (Will be generated dynamically)
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h3>Score Distribution</h3>
+                    <div class="chart-placeholder">
+                        Score Distribution Chart<br>
+                        (Will be generated dynamically)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Questions Analysis -->
+        <div class="questions-section">
+            <h2 class="section-title">Detailed Question Analysis</h2>
+            
+            <!-- Question 1 -->
+            <div class="question-item">
+                <div class="question-header" onclick="toggleQuestion('question1')">
+                    <div class="question-number">Q1</div>
+                    <div class="question-text">What is your experience with Python programming?</div>
+                    <div class="question-score">8.2/10</div>
+                </div>
+                <div class="question-details" id="question1">
+                    <div class="answer-section">
+                        <h4 class="section-subtitle">Your Answer</h4>
+                        <div class="user-answer">
+                            I have 3 years of professional experience with Python, working on web development using Django and data analysis with Pandas and NumPy. I've also built several automation scripts and contributed to open-source projects.
+                        </div>
+                    </div>
+                    
+                    <div class="evaluation-section">
+                        <h4 class="section-subtitle">Evaluation Metrics</h4>
+                        <div class="metrics-grid">
+                            <div class="metric-item">
+                                <div class="metric-value">8.5</div>
+                                <div class="metric-label">Content Score</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-value">7.8</div>
+                                <div class="metric-label">Clarity Score</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-value">8.5</div>
+                                <div class="metric-label">Relevance Score</div>
+                            </div>
+                        </div>
+                        
+                        <div class="keywords-section">
+                            <div class="keywords-positive">
+                                <div class="keywords-title">Keywords Matched</div>
+                                <div class="keyword-list">
+                                    <span class="keyword">python</span>
+                                    <span class="keyword">experience</span>
+                                    <span class="keyword">programming</span>
+                                    <span class="keyword">projects</span>
+                                    <span class="keyword">libraries</span>
+                                </div>
+                            </div>
+                            <div class="keywords-negative">
+                                <div class="keywords-title">Keywords Missing</div>
+                                <div class="keyword-list">
+                                    <span class="keyword">frameworks</span>
+                                    <span class="keyword">best practices</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question 2 -->
+            <div class="question-item">
+                <div class="question-header" onclick="toggleQuestion('question2')">
+                    <div class="question-number">Q2</div>
+                    <div class="question-text">Tell me about your problem-solving approach.</div>
+                    <div class="question-score">7.8/10</div>
+                </div>
+                <div class="question-details" id="question2">
+                    <div class="answer-section">
+                        <h4 class="section-subtitle">Your Answer</h4>
+                        <div class="user-answer">
+                            My problem-solving approach involves first understanding the root cause, then breaking down complex problems into smaller manageable parts. I prioritize solutions based on impact and feasibility, and always consider multiple approaches before implementation.
+                        </div>
+                    </div>
+                    
+                    <div class="evaluation-section">
+                        <h4 class="section-subtitle">Evaluation Metrics</h4>
+                        <div class="metrics-grid">
+                            <div class="metric-item">
+                                <div class="metric-value">8.0</div>
+                                <div class="metric-label">Content Score</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-value">7.5</div>
+                                <div class="metric-label">Clarity Score</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-value">8.0</div>
+                                <div class="metric-label">Relevance Score</div>
+                            </div>
+                        </div>
+                        
+                        <div class="keywords-section">
+                            <div class="keywords-positive">
+                                <div class="keywords-title">Keywords Matched</div>
+                                <div class="keyword-list">
+                                    <span class="keyword">problem</span>
+                                    <span class="keyword">solution</span>
+                                    <span class="keyword">approach</span>
+                                    <span class="keyword">analyze</span>
+                                </div>
+                            </div>
+                            <div class="keywords-negative">
+                                <div class="keywords-title">Keywords Missing</div>
+                                <div class="keyword-list">
+                                    <span class="keyword">implement</span>
+                                    <span class="keyword">methodology</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add more questions as needed -->
+        </div>
+
+        <!-- Recommendations -->
+        <div class="recommendations">
+            <h2 class="section-title">Improvement Recommendations</h2>
+            
+            <div class="recommendation-item">
+                <div class="recommendation-icon">💡</div>
+                <div>
+                    <strong>Expand Technical Examples:</strong> Include more specific examples of projects and technologies you've worked with.
+                </div>
+            </div>
+            
+            <div class="recommendation-item">
+                <div class="recommendation-icon">🎯</div>
+                <div>
+                    <strong>Improve Answer Structure:</strong> Use the STAR method (Situation, Task, Action, Result) for behavioral questions.
+                </div>
+            </div>
+            
+            <div class="recommendation-item">
+                <div class="recommendation-icon">⚡</div>
+                <div>
+                    <strong>Increase Keyword Density:</strong> Ensure you cover all expected keywords mentioned in the question.
+                </div>
+            </div>
+            
+            <div class="recommendation-item">
+                <div class="recommendation-icon">📊</div>
+                <div>
+                    <strong>Provide Metrics:</strong> Include quantitative results and achievements in your answers when possible.
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <h3>Session Information</h3>
+            <div class="session-info">
+                <div class="info-item">
+                    <strong>Session ID:</strong><br>
+                    INT-2024-001
+                </div>
+                <div class="info-item">
+                    <strong>Date:</strong><br>
+                    <span id="session-date">November 15, 2024</span>
+                </div>
+                <div class="info-item">
+                    <strong>Time:</strong><br>
+                    <span id="session-time">14:30 - 15:45</span>
+                </div>
+                <div class="info-item">
+                    <strong>AI Model:</strong><br>
+                    InterviewBot v2.1
+                </div>
+            </div>
+            <p style="margin-top: 20px; opacity: 0.8;">
+                This report was generated automatically by the AI Interview Bot system.<br>
+                For more practice sessions, visit your dashboard.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Toggle question details
+        function toggleQuestion(questionId) {
+            const element = document.getElementById(questionId);
+            element.classList.toggle('active');
+        }
+
+        // Initialize with current date and time
+        document.getElementById('session-date').textContent = new Date().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+
+        // Add pulse animation to the overall score card
+        document.addEventListener('DOMContentLoaded', function() {
+            const scoreCard = document.querySelector('.score-excellent');
+            scoreCard.classList.add('pulse');
+            
+            // Auto-expand first question
+            setTimeout(() => {
+                toggleQuestion('question1');
+            }, 500);
+        });
+
+        // Print functionality
+        function printReport() {
+            window.print();
+        }
+
+        // Add print button event listener (you can add a print button in the HTML)
+        document.addEventListener('DOMContentLoaded', function() {
+            // This would be connected to a print button if added
+            const printBtn = document.createElement('button');
+            printBtn.textContent = 'Print Report';
+            printBtn.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                padding: 12px 24px;
+                background: #3498db;
+                color: white;
+                border: none;
+                border-radius: 25px;
+                cursor: pointer;
+                box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+                z-index: 1000;
+            `;
+            printBtn.onclick = printReport;
+            document.body.appendChild(printBtn);
+        });
+    </script>
+</body>
+</html>
