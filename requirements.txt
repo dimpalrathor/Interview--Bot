@@ -7,3 +7,4 @@ sentence-transformers
 rapidfuzz
 gTTS
 pydub
+pyaudioop
