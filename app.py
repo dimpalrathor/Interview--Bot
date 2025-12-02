@@ -11,6 +11,10 @@ import traceback
 
 import gradio as gr
 
+import os
+os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'max_split_size_mb:128'
+os.environ['TRANSFORMERS_CACHE'] = '/tmp/transformers_cache'
+
 from utils.audio_utils import AudioHandler
 from utils.voice_config import VoiceConfig
 from models.enhanced_interview_model import EnhancedInterviewModel
