@@ -637,7 +637,7 @@ if __name__ == "__main__":
 
     try:
         # Render provides PORT automatically (example: 5023)
-        port = int(os.environ.get("PORT", 7860))
+        port = int(os.environ.get("PORT", 7869))
 
         ui.queue()  # needed for streaming
 
