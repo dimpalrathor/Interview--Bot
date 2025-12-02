@@ -7,4 +7,4 @@ sentence-transformers
 rapidfuzz
 gTTS
 pydub
-
+SpeechRecognition
