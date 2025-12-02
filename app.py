@@ -627,14 +627,23 @@ def build_ui():
 
 
 if __name__ == "__main__":
+    import os
+
     ui = build_ui()
 
     try:
-        ui.queue()  # required for generator + audio + Whisper
+        # Render provides PORT automatically (example: 5023)
+        port = int(os.environ.get("PORT", 7860))
 
-        ui.launch(server_name="0.0.0.0", server_port=7869, share=True)
+        ui.queue()  # needed for streaming
 
+        ui.launch(
+            server_name="0.0.0.0",
+            server_port=port,
+            share=False  # MUST be False on Render
+        )
 
     except Exception as e:
         print("Failed to launch Gradio app:", e)
+
 
